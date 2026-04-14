@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { ArrowLeft, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { CATEGORIES } from '../constants/categories';
+import { formatCurrency } from '../lib/currency';
 
 // Map tailwind colors to hex for Recharts
 const COLOR_MAP: Record<string, string> = {
@@ -84,7 +85,7 @@ export default function Insights() {
         <Card className="p-6 text-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none">
           <div className="text-blue-100 font-medium mb-1">Total Spent ({timeFilter})</div>
           <div className="text-4xl font-bold">
-            ${totalSpent.toFixed(2)}
+            {formatCurrency(totalSpent, 'USD')}
           </div>
         </Card>
 
@@ -120,7 +121,7 @@ export default function Insights() {
                     <span className="font-medium text-gray-700 flex items-center gap-2">
                       <span>{cat.icon}</span> {cat.label}
                     </span>
-                    <span className="font-semibold text-gray-900">${item.amount.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(item.amount, 'USD')}</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div 
@@ -146,7 +147,7 @@ export default function Insights() {
                   </div>
                   <span className="font-medium text-gray-900">{merchant.name}</span>
                 </div>
-                <span className="font-semibold text-gray-900">${merchant.total.toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(merchant.total, 'USD')}</span>
               </div>
             ))}
           </div>

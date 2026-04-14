@@ -4,6 +4,7 @@ import { ReceiptWithWarranties, getDaysUntilExpiry } from '../../types/database'
 import { CATEGORIES } from '../../constants/categories';
 import { Card } from '../ui/Card';
 import { ChevronRight } from 'lucide-react';
+import { formatCurrency } from '../../lib/currency';
 
 interface ReceiptCardProps {
   receipt: ReceiptWithWarranties;
@@ -50,7 +51,7 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ receipt }) => {
           <span>{new Date(receipt.purchaseDate).toLocaleDateString()}</span>
           <span className="mx-2">•</span>
           <span className="font-medium text-gray-700">
-            {new Intl.NumberFormat('en-US', { style: 'currency', currency: receipt.currency || 'USD' }).format(receipt.totalAmount)}
+            {formatCurrency(receipt.totalAmount, receipt.currency)}
           </span>
         </div>
       </div>

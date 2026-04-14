@@ -6,6 +6,7 @@ import { ReceiptCard } from '../components/receipt/ReceiptCard';
 import { Card } from '../components/ui/Card';
 import { Plus, LogOut, User } from 'lucide-react';
 import { CATEGORIES } from '../constants/categories';
+import { formatCurrency } from '../lib/currency';
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -84,7 +85,7 @@ export default function Dashboard() {
               ) : (
                 Object.entries(totalsByCurrency).map(([curr, amount]) => (
                   <span key={curr}>
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: curr }).format(amount)}
+                    {formatCurrency(amount, curr)}
                   </span>
                 ))
               )}

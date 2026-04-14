@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { ArrowLeft, Calendar, Trash2, Camera, Home, Download, X } from 'lucide-react';
 import { ExpiryCountdown } from '../components/warranty/ExpiryCountdown';
 import { CATEGORIES } from '../constants/categories';
+import { formatCurrency } from '../lib/currency';
 
 export default function ReceiptDetail() {
   const { id } = useParams<{ id: string }>();
@@ -149,7 +150,7 @@ export default function ReceiptDetail() {
                 <p className="text-gray-500 mt-1">{new Date(receipt.purchaseDate).toLocaleDateString()}</p>
               </div>
               <div className="text-2xl font-bold text-gray-900">
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: receipt.currency || 'USD' }).format(receipt.totalAmount)}
+                {formatCurrency(receipt.totalAmount, receipt.currency)}
               </div>
             </div>
           </Card>

@@ -6,6 +6,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { PreferencesProvider } from './contexts/PreferencesContext';
 
 // Pages
 import Login from './pages/Login';
@@ -26,40 +28,44 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/" element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        } />
-        
-        <Route path="/scan" element={
-          <PrivateRoute>
-            <Scan />
-          </PrivateRoute>
-        } />
-        
-        <Route path="/insights" element={
-          <PrivateRoute>
-            <Insights />
-          </PrivateRoute>
-        } />
-        
-        <Route path="/receipt/:id" element={
-          <PrivateRoute>
-            <ReceiptDetail />
-          </PrivateRoute>
-        } />
+    <ErrorBoundary>
+      <PreferencesProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            
+            <Route path="/" element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } />
+            
+            <Route path="/scan" element={
+              <PrivateRoute>
+                <Scan />
+              </PrivateRoute>
+            } />
+            
+            <Route path="/insights" element={
+              <PrivateRoute>
+                <Insights />
+              </PrivateRoute>
+            } />
+            
+            <Route path="/receipt/:id" element={
+              <PrivateRoute>
+                <ReceiptDetail />
+              </PrivateRoute>
+            } />
 
-        <Route path="/profile" element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        } />
-      </Routes>
-    </BrowserRouter>
+            <Route path="/profile" element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            } />
+          </Routes>
+        </BrowserRouter>
+      </PreferencesProvider>
+    </ErrorBoundary>
   );
 }
