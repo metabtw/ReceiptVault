@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "plan": { "type": "string", "enum": ["free", "pro", "family"] },
+        "pushToken": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "plan", "createdAt"]
+    },
+    "Receipt": {
+      "title": "Receipt",
+      "description": "A scanned receipt",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "merchantName": { "type": "string" },
+        "purchaseDate": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "currency": { "type": "string" },
+        "category": { "type": "string", "enum": ["Electronics", "Appliances", "Clothing", "Food", "Health", "Home", "Other"] },
+        "imageUrl": { "type": "string" },
+        "rawOcrText": { "type": "string" },
+        "returnDeadline": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "merchantName", "purchaseDate", "totalAmount", "category", "createdAt"]
+    },
+    "WarrantyItem": {
+      "title": "WarrantyItem",
+      "description": "Warranty extracted from a receipt",
+      "type": "object",
+      "properties": {
+        "receiptId": { "type": "string" },
+        "userId": { "type": "string" },
+        "productName": { "type": "string" },
+        "warrantyStart": { "type": "string" },
+        "warrantyEnd": { "type": "string" },
+        "warrantySource": { "type": "string", "enum": ["inferred", "manual", "card_scan"] },
+        "notes": { "type": "string" },
+        "notified30d": { "type": "boolean" },
+        "notified7d": { "type": "boolean" },
+        "notified1d": { "type": "boolean" }
+      },
+      "required": ["receiptId", "userId", "productName", "warrantyStart", "warrantyEnd", "warrantySource"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/users/{userId}/receipts/{receiptId}": {
+      "schema": { "$ref": "#/entities/Receipt" },
+      "description": "User receipts"
+    },
+    "/users/{userId}/warranty_items/{warrantyItemId}": {
+      "schema": { "$ref": "#/entities/WarrantyItem" },
+      "description": "User warranty items"
+    }
+  }
+}

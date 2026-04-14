@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+    
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+    
+    function isValidSimpleDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidUser(data) {
+      return hasRequiredFields(['email', 'plan', 'createdAt']) &&
+             isValidEmail(data.email) &&
+             data.plan in ['free', 'pro', 'family'] &&
+             isValidDateString(data.createdAt);
+    }
+    
+    function isValidReceipt(data, userId) {
+      return hasRequiredFields(['userId', 'merchantName', 'purchaseDate', 'totalAmount', 'category', 'createdAt']) &&
+             data.userId == userId &&
+             data.merchantName is string && data.merchantName.size() > 0 && data.merchantName.size() < 200 &&
+             isValidSimpleDateString(data.purchaseDate) &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.category in ['Electronics', 'Appliances', 'Clothing', 'Food', 'Health', 'Home', 'Other'] &&
+             isValidDateString(data.createdAt) &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() < 1000000)) && // Allow base64 up to ~1MB
+             (!('rawOcrText' in data) || (data.rawOcrText is string && data.rawOcrText.size() < 50000)) &&
+             (!('returnDeadline' in data) || data.returnDeadline == null || isValidSimpleDateString(data.returnDeadline));
+    }
+    
+    function isValidWarrantyItem(data, userId) {
+      return hasRequiredFields(['receiptId', 'userId', 'productName', 'warrantyStart', 'warrantyEnd', 'warrantySource']) &&
+             data.userId == userId &&
+             data.receiptId is string && data.receiptId.size() > 0 && data.receiptId.size() < 100 &&
+             data.productName is string && data.productName.size() > 0 && data.productName.size() < 200 &&
+             isValidSimpleDateString(data.warrantyStart) &&
+             isValidSimpleDateString(data.warrantyEnd) &&
+             data.warrantySource in ['inferred', 'manual', 'card_scan'] &&
+             (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() < 2000)) &&
+             (!('notified30d' in data) || data.notified30d is bool) &&
+             (!('notified7d' in data) || data.notified7d is bool) &&
+             (!('notified1d' in data) || data.notified1d is bool);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                    request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(userId);
+      
+      match /receipts/{receiptId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidReceipt(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidReceipt(request.resource.data, userId) &&
+                      request.resource.data.createdAt == resource.data.createdAt &&
+                      request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId);
+      }
+      
+      match /warranty_items/{warrantyItemId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidWarrantyItem(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidWarrantyItem(request.resource.data, userId) &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.receiptId == resource.data.receiptId;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
